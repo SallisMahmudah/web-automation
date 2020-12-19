@@ -1,4 +1,4 @@
-# web_automation
+# web-automation
 Software Automation Testing Desktop web using cucumber
 
 ## How to run

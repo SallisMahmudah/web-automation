@@ -1,0 +1,8 @@
+web-desktop: features/scenarios/web/desktop
+         -r features/helper
+         -r features/support
+         -r config/web/web.rb
+         -r config/web/desktop
+         -r screenshots
+         -r features/step_definitions/web/desktop
+         -r features/page_objects/desktop

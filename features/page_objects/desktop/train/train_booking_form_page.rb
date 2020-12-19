@@ -67,8 +67,11 @@ class BookingFormTrainPage < SitePrism::Page
             loop do
                 booking_fullname_field[totalAdult].send_keys(faker_fullname)
                 booking_born_date_section[index].click
+                sleep 1
                 find(:xpath, date, text: faker_date, match: :first).click
+                sleep 1
                 find(:xpath, month, text: faker_month, match: :first).click
+                sleep 1
                 booking_born_year_field[3].click
                 index += 1
                 totalAdult += 1

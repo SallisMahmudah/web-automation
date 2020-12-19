@@ -2,7 +2,8 @@ include RSpec::Matchers
 class BookingFormFlightPage < SitePrism::Page
 
     elements :booking_fullname_field,                         ".input-list-autocomplete"
-    elements :booking_title_dropdown,                         ".input-flight-dropdown"
+    elements :booking_general_dropdown,                       ".input-flight-dropdown"
+    elements :booking_title_dropdown,                  :xpath,"//div[contains(@class,'title-dropdown')]/div[@class='title-flight-dropdown']"
     elements :booking_dropdown_list,                   :xpath,"//ul[@class='ul-list-menu']/li/div[@class='list-horizontal__middle']"
     elements :booking_summary_schedule_text,           :xpath,"//div[@class='flight-item-schedule']/div[@class='list-horizontal__middle']"
     elements :booking_country_dropdown,                       ".flight-dropdown-searchbox"
@@ -10,6 +11,8 @@ class BookingFormFlightPage < SitePrism::Page
     elements :booking_adult_form,                      :xpath,"//*[contains (@id, 'adult-form')]"
     elements :booking_infant_form,                     :xpath,"//*[contains (@id, 'infant-form')]"
     elements :booking_detail_passenger_info,                  ".heading-passenger-details"
+    elements :booking_birth_date_field,                       ".wrapper-date-split"
+    elements :booking_born_year_field,                 :xpath,"//ul[@class='ul-list-menu']/li"
     element :booking_phone_number_field,               :xpath,"//input[@name='cp-phone']"
     element :booking_email_field,                      :xpath,"//input[@name='cp-email']"
     element :booking_total_price_text,                        ".total-payment-amount"
@@ -25,14 +28,16 @@ class BookingFormFlightPage < SitePrism::Page
         puts "Buyer Phone : #{phone}"
         puts "Buyer email : #{email}"
 
-        booking_title_dropdown[0].click
+        booking_general_dropdown.first.click
         find(:xpath, elm, :text => faker_title).click
-        booking_fullname_field[0].send_keys(name)
+        booking_fullname_field.first.send_keys(name)
         booking_email_field.send_keys(email)
         booking_phone_number_field.send_keys(phone)
     end
 
     def validate_schedule_data()
+        wait_until_booking_total_price_text_visible(wait: 60)
+
         if $route == 'round trip'
             expect(booking_summary_schedule_text[3].text).to eq("#{$return_flight_origin_airport} - #{$return_flight_destination_airport}")
             expect(booking_summary_schedule_text[5].text).to eq("#{$return_flight_origin_time}")
@@ -41,34 +46,38 @@ class BookingFormFlightPage < SitePrism::Page
             expect(booking_summary_schedule_text[2].text).to eq("#{$departure_flight_origin_time}")
         end
 
-        $total_price = $departure_flight_price.to_i + $return_flight_price.to_i
-        expect(normalize_price(booking_total_price_text.text)).to eq($total_price)
+        $total_price = normalize_price(booking_total_price_text.text)
     end
 
     def fill_passenger_data()
-        index = 1
+        count = 1
         totalPassengers = booking_detail_passenger_info.length + 1
-        totalInfant = ((booking_infant_form.length) + 1).to_i
         elm = "//ul[@class='ul-list-menu']/li/div[@class='list-horizontal__middle']"
 
         loop do
-            booking_title_dropdown[index].click
+            booking_title_dropdown.first.click
             find(:xpath, elm, :text => faker_title).click
-            booking_fullname_field[index].send_keys(faker_fullname)
-            booking_country_dropdown[index].click
+            booking_fullname_field[count].send_keys(faker_fullname)
+            booking_country_dropdown[count].click
             find(:xpath, elm, :text => ENV['FLIGHT_CITIZENSHIP']).click
-            index += 1
-            break if index == totalPassengers
+            count += 1
+            break if count == totalPassengers
         end
         
-        if totalInfant > 1
-            loop do
-                booking_fullname_field[index].send_keys(faker_fullname)
-                booking_born_date_field[index - 1].send_keys('3')
-                booking_born_month_field[index - 1].send_keys('Feb')
-                booking_born_year_field[index - 1].send_keys('2018')
-                index += 1
-                break if index == totalInfant
+        if page.has_css?('.wrapper-date-split')
+            birthDateCount = booking_birth_date_field.length
+            count = 0
+            
+            loop do 
+                booking_birth_date_field[count].click
+                sleep 1
+                find(:xpath, elm, text: faker_date, match: :first).click
+                sleep 1
+                find(:xpath, elm, text: faker_month, match: :first).click
+                sleep 1
+                booking_born_year_field[1].click
+                count += 1
+                break if count == birthDateCount
             end
         end
     end

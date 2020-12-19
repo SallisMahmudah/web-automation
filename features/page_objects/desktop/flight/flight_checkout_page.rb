@@ -34,10 +34,9 @@ class CheckoutFlightPage < SitePrism::Page
 
     def validate_price()
         wait_until_checkout_schedule_detail_section_visible(wait: 90)
-        fee = $totalAdultPassenger.to_i * 7500
 
-        total_amount = $total_price.to_i + fee.to_i
-        expect(normalize_price(checkout_total_price.text)).to eq(total_amount)
+        totalAmount = $total_price.to_i + 7500
+        expect(normalize_price(checkout_total_price.text)).to eq(totalAmount)
     end
 
     def tap_on_payment_button()

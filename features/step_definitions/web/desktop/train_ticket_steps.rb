@@ -1,4 +1,4 @@
-And(/^user go to train page$/) do
+  And(/^user go to train page$/) do
     @search = SearchTrainPage.new
     @search.load
     sleep 3

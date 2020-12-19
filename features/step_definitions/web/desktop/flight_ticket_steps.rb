@@ -1,4 +1,4 @@
-And(/^user go to flight page$/) do
+  And(/^user go to flight page$/) do
     @search = SearchFlightPage.new
     @search.load
     sleep 3
